@@ -3,14 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Олег - Специалист по машинному обучению</title>
+    <title>Мониторинг станков ЧПУ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #2c3e50;
             --secondary: #3498db;
             --accent: #e74c3c;
+            --success: #2ecc71;
+            --warning: #f39c12;
             --light: #ecf0f1;
             --dark: #2c3e50;
+            --gray: #7f8c8d;
         }
         
         * {
@@ -21,13 +25,13 @@
         }
         
         body {
-            background-color: #f9f9f9;
+            background-color: #f5f7fa;
             color: #333;
             line-height: 1.6;
         }
         
         .container {
-            max-width: 1100px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 0 20px;
         }
@@ -35,185 +39,270 @@
         header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            padding: 60px 0;
-            text-align: center;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         
-        .profile-img {
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid rgba(255, 255, 255, 0.3);
-            margin-bottom: 20px;
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
         
-        .tagline {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            margin-bottom: 20px;
+        .logo i {
+            font-size: 2rem;
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+        }
+        
+        .last-update {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
         }
         
         .btn {
-            display: inline-block;
-            background: var(--accent);
+            background: var(--secondary);
             color: white;
-            padding: 12px 25px;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 20px;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             transition: all 0.3s ease;
         }
         
         .btn:hover {
-            background: #c0392b;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            background: #2980b9;
+            transform: translateY(-2px);
         }
         
-        section {
-            padding: 60px 0;
+        .btn-refresh {
+            background: var(--success);
         }
         
-        h2 {
-            text-align: center;
-            margin-bottom: 40px;
-            color: var(--primary);
-            position: relative;
+        .btn-refresh:hover {
+            background: #27ae60;
         }
         
-        h2:after {
-            content: '';
-            display: block;
-            width: 80px;
-            height: 4px;
-            background: var(--secondary);
-            margin: 15px auto;
-            border-radius: 2px;
-        }
-        
-        .about-content {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 30px;
-        }
-        
-        .about-text {
-            flex: 1;
-            min-width: 300px;
-        }
-        
-        .skills {
-            display: flex;
-            flex-wrap: wrap;
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
             gap: 20px;
-            margin-top: 30px;
+            margin-bottom: 30px;
         }
         
-        .skill {
-            background: var(--light);
-            padding: 15px 20px;
-            border-radius: 8px;
-            flex: 1;
-            min-width: 200px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-        
-        .projects {
-            background: var(--light);
-        }
-        
-        .project-cards {
+        .status-cards {
             display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            justify-content: center;
+            flex-direction: column;
+            gap: 15px;
         }
         
-        .project-card {
+        .status-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .status-card h3 {
+            color: var(--gray);
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        
+        .status-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .status-card .change {
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .positive {
+            color: var(--success);
+        }
+        
+        .negative {
+            color: var(--accent);
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .machine-card {
             background: white;
             border-radius: 10px;
             overflow: hidden;
-            width: 300px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             transition: transform 0.3s ease;
         }
         
-        .project-card:hover {
-            transform: translateY(-10px);
+        .machine-card:hover {
+            transform: translateY(-5px);
         }
         
-        .project-img {
-            height: 180px;
-            background: linear-gradient(45deg, #3498db, #2c3e50);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .card-header {
+            padding: 15px 20px;
+            background: var(--primary);
             color: white;
-            font-size: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
             font-weight: bold;
         }
         
-        .project-info {
+        .status-active {
+            background: var(--success);
+        }
+        
+        .status-warning {
+            background: var(--warning);
+        }
+        
+        .status-error {
+            background: var(--accent);
+        }
+        
+        .status-idle {
+            background: var(--gray);
+        }
+        
+        .card-body {
             padding: 20px;
         }
         
-        .project-info h3 {
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-        
-        .contact {
-            text-align: center;
-        }
-        
-        .contact-links {
+        .info-row {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 30px;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
         }
         
-        .contact-link {
-            display: inline-flex;
-            align-items: center;
-            background: var(--primary);
-            color: white;
-            padding: 12px 25px;
-            border-radius: 30px;
-            text-decoration: none;
-            transition: all 0.3s ease;
+        .info-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
         }
         
-        .contact-link:hover {
+        .info-label {
+            color: var(--gray);
+            font-weight: 500;
+        }
+        
+        .info-value {
+            font-weight: bold;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress-fill {
+            height: 100%;
             background: var(--secondary);
-            transform: translateY(-3px);
+            border-radius: 4px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .chart {
+            height: 250px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
         }
         
         footer {
             background: var(--dark);
             color: white;
             text-align: center;
-            padding: 30px 0;
-            margin-top: 60px;
+            padding: 20px 0;
+            margin-top: 40px;
+        }
+        
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-cards {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+            
+            .status-card {
+                min-width: 200px;
+            }
         }
         
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
             }
             
-            .about-content {
-                flex-direction: column;
+            .controls {
+                flex-wrap: wrap;
             }
         }
     </style>
@@ -221,81 +310,208 @@
 <body>
     <header>
         <div class="container">
-            <img src="https://via.placeholder.com/180" alt="Олег" class="profile-img">
-            <h1>Олег</h1>
-            <p class="tagline">Ведущий специалист по машинному обучению | Создатель Gimini</p>
-            <p>Превращаю данные в интеллектуальные решения</p>
-            <a href="#contact" class="btn">Связаться со мной</a>
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-cogs"></i>
+                    <h1>Мониторинг станков ЧПУ</h1>
+                </div>
+                <div class="last-update">
+                    <i class="fas fa-sync-alt"></i>
+                    Последнее обновление: <span id="update-time">15:42:23</span>
+                </div>
+            </div>
         </div>
     </header>
     
-    <section id="about">
-        <div class="container">
-            <h2>Обо мне</h2>
-            <div class="about-content">
-                <div class="about-text">
-                    <p>Привет! Меня зовут Олег, и я ведущий специалист в области машинного обучения. В свои 20 лет я уже успел создать инновационный проект Gimini и работаю на себя, реализуя сложные и интересные проекты в сфере AI.</p>
-                    <p>Моя страсть к технологиям и машинному обучению началась несколько лет назад, и с тех пор я постоянно совершенствую свои навыки, слежу за последними тенденциями и разрабатываю innovative решения.</p>
-                    <p>Я верю, что искусственный интеллект и машинное обучение способны кардинально изменить наш мир к лучшему, и я горжусь тем, что вношу свой вклад в это преобразование.</p>
+    <div class="container">
+        <div class="controls">
+            <button class="btn btn-refresh" onclick="refreshData()">
+                <i class="fas fa-sync-alt"></i> Обновить данные
+            </button>
+            <button class="btn" onclick="showSettings()">
+                <i class="fas fa-cog"></i> Настройки
+            </button>
+            <button class="btn" onclick="exportData()">
+                <i class="fas fa-download"></i> Экспорт данных
+            </button>
+        </div>
+        
+        <div class="dashboard">
+            <div class="status-cards">
+                <div class="status-card">
+                    <h3>Всего станков</h3>
+                    <div class="value">24</div>
+                    <div class="change positive">+2 с прошлой недели</div>
                 </div>
-                <div class="skills">
-                    <div class="skill">Машинное обучение</div>
-                    <div class="skill">Глубокое обучение</div>
-                    <div class="skill">Обработка естественного языка</div>
-                    <div class="skill">Компьютерное зрение</div>
-                    <div class="skill">Анализ данных</div>
-                    <div class="skill">Разработка AI-продуктов</div>
+                <div class="status-card">
+                    <h3>В работе</h3>
+                    <div class="value">18</div>
+                    <div class="change positive">75% активных</div>
+                </div>
+                <div class="status-card">
+                    <h3>Простой</h3>
+                    <div class="value">4</div>
+                    <div class="change negative">16.7% от общего числа</div>
+                </div>
+                <div class="status-card">
+                    <h3>Общая эффективность</h3>
+                    <div class="value">82.5%</div>
+                    <div class="change positive">+2.4% с прошлого месяца</div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title">Загрузка производственных мощностей</div>
+                    <select id="chart-range">
+                        <option>За сегодня</option>
+                        <option selected>За неделю</option>
+                        <option>За месяц</option>
+                    </select>
+                </div>
+                <div class="chart">
+                    График загрузки мощностей (здесь будет реальная диаграмма при подключении библиотеки Chart.js)
                 </div>
             </div>
         </div>
-    </section>
-    
-    <section id="projects" class="projects">
-        <div class="container">
-            <h2>Мои проекты</h2>
-            <div class="project-cards">
-                <div class="project-card">
-                    <div class="project-img">Gimini</div>
-                    <div class="project-info">
-                        <h3>Gimini</h3>
-                        <p>Инновационная платформа, разработанная для решения сложных задач с использованием передовых методов машинного обучения. Gimini помогает бизнесу принимать data-driven решения.</p>
-                    </div>
-                </div>
-                <div class="project-card">
-                    <div class="project-img">AI Solution</div>
-                    <div class="project-info">
-                        <h3>AI Аналитика</h3>
-                        <p>Система прогнозной аналитики для ритейла, позволяющая предсказывать спрос, оптимизировать запасы и повышать эффективность бизнес-процессов.</p>
-                    </div>
-                </div>
-                <div class="project-card">
-                    <div class="project-img">Neural Lab</div>
-                    <div class="project-info">
-                        <h3>Neural Lab</h3>
-                        <p>Исследовательский проект в области нейросетевых архитектур, направленный на создание более эффективных и компактных моделей глубокого обучения.</p>
-                    </div>
-                </div>
-            </div>
+        
+        <div class="main-content" id="machines-container">
+            <!-- Карточки станков будут добавляться здесь через JavaScript -->
         </div>
-    </section>
-    
-    <section id="contact">
-        <div class="container">
-            <h2>Контакты</h2>
-            <p>Если вы хотите обсудить потенциальный проект или у вас есть вопросы, не стесняйтесь связаться со мной:</p>
-            <div class="contact-links">
-                <a href="mailto:microssoft.dixter123@gmail.com" class="contact-link">Email</a>
-                <a href="https://t.me/o1ehaT0r" class="contact-link">Telegram</a>
-                <a href="https://linkedin.com/in/oleg-ml" class="contact-link">LinkedIn</a>
-                <a href="https://github.com/oleg132856" class="contact-link">GitHub</a>
-            </div>
-        </div>
-    </section>
+    </div>
     
     <footer>
         <div class="container">
-            <p>© 2023 Олег. Специалист по машинному обучению</p>
+            <p>© 2023 Система мониторинга станков ЧПУ | Реальные данные обновляются каждые 30 секунд</p>
         </div>
     </footer>
+
+    <script>
+        // Данные станков (в реальном приложении будут приходить с сервера)
+        const machines = [
+            { id: 1, name: "ЧПУ Фрезерный 1", status: "active", operation: "Фрезеровка детали №245", progress: 75, partsCompleted: 124, totalParts: 150, efficiency: 92, timeRemaining: "01:45" },
+            { id: 2, name: "ЧПУ Токарный 3", status: "active", operation: "Точение вала №812", progress: 43, partsCompleted: 43, totalParts: 100, efficiency: 88, timeRemaining: "02:30" },
+            { id: 3, name: "ЧПУ Фрезерный 2", status: "warning", operation: "Фрезеровка панели №512", progress: 90, partsCompleted: 90, totalParts: 100, efficiency: 85, timeRemaining: "00:25" },
+            { id: 4, name: "ЧПУ Токарный 1", status: "error", operation: "Ожидание загрузки", progress: 0, partsCompleted: 0, totalParts: 50, efficiency: 0, timeRemaining: "N/A" },
+            { id: 5, name: "ЧПУ 5-осевой 1", status: "active", operation: "Изготовление прототипа", progress: 28, partsCompleted: 1, totalParts: 1, efficiency: 95, timeRemaining: "05:20" },
+            { id: 6, name: "ЧПУ Токарный 2", status: "idle", operation: "Техническое обслуживание", progress: 0, partsCompleted: 0, totalParts: 0, efficiency: 0, timeRemaining: "N/A" },
+            { id: 7, name: "ЧПУ Фрезерный 3", status: "active", operation: "Изготовление корпуса", progress: 62, partsCompleted: 62, totalParts: 100, efficiency: 90, timeRemaining: "01:15" },
+            { id: 8, name: "ЧПУ Гравировальный 1", status: "active", operation: "Гравировка логотипа", progress: 51, partsCompleted: 51, totalParts: 100, efficiency: 87, timeRemaining: "00:45" }
+        ];
+        
+        // Функция для отображения карточек станков
+        function renderMachines() {
+            const container = document.getElementById('machines-container');
+            container.innerHTML = '';
+            
+            machines.forEach(machine => {
+                let statusText, statusClass;
+                
+                switch(machine.status) {
+                    case 'active':
+                        statusText = 'В работе';
+                        statusClass = 'status-active';
+                        break;
+                    case 'warning':
+                        statusText = 'Предупреждение';
+                        statusClass = 'status-warning';
+                        break;
+                    case 'error':
+                        statusText = 'Ошибка';
+                        statusClass = 'status-error';
+                        break;
+                    case 'idle':
+                        statusText = 'Простой';
+                        statusClass = 'status-idle';
+                        break;
+                }
+                
+                const machineCard = `
+                    <div class="machine-card">
+                        <div class="card-header">
+                            <h3>${machine.name}</h3>
+                            <div class="status ${statusClass}">${statusText}</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-row">
+                                <span class="info-label">Операция:</span>
+                                <span class="info-value">${machine.operation}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Выполнено:</span>
+                                <span class="info-value">${machine.partsCompleted} / ${machine.totalParts}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Прогресс:</span>
+                                <span class="info-value">${machine.progress}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${machine.progress}%"></div>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Эффективность:</span>
+                                <span class="info-value">${machine.efficiency}%</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Осталось времени:</span>
+                                <span class="info-value">${machine.timeRemaining}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.innerHTML += machineCard;
+            });
+        }
+        
+        // Функция обновления данных
+        function refreshData() {
+            // Имитация обновления данных
+            document.getElementById('update-time').textContent = new Date().toLocaleTimeString();
+            
+            // В реальном приложении здесь был бы запрос к серверу
+            machines.forEach(machine => {
+                if (machine.status === 'active') {
+                    // Увеличиваем прогресс на случайное значение
+                    const increment = Math.floor(Math.random() * 5);
+                    machine.progress = Math.min(100, machine.progress + increment);
+                    machine.partsCompleted = Math.min(machine.totalParts, Math.floor(machine.progress * machine.totalParts / 100));
+                    
+                    // Немного изменяем эффективность
+                    machine.efficiency = Math.max(70, Math.min(99, machine.efficiency + (Math.random() * 2 - 1)));
+                }
+            });
+            
+            renderMachines();
+            
+            // Показываем уведомление
+            showNotification('Данные успешно обновлены', 'success');
+        }
+        
+        // Функция показа уведомления
+        function showNotification(message, type) {
+            // В реальном приложении здесь было бы красивое уведомление
+            alert(message);
+        }
+        
+        // Функция показа настроек
+        function showSettings() {
+            alert('Здесь будет диалог настроек мониторинга');
+        }
+        
+        // Функция экспорта данных
+        function exportData() {
+            alert('Здесь будет функциональность экспорта данных в CSV/Excel');
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            renderMachines();
+            document.getElementById('update-time').textContent = new Date().toLocaleTimeString();
+            
+            // Имитация автоматического обновления каждые 30 секунд
+            setInterval(refreshData, 30000);
+        });
+    </script>
 </body>
 </html>
