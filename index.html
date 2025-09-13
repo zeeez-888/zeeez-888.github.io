@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мониторинг станков ЧПУ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #2c3e50;
@@ -265,10 +266,14 @@
             height: 250px;
             background: #f9f9f9;
             border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--gray);
+            position: relative;
+        }
+        
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
         }
         
         footer {
@@ -292,6 +297,10 @@
             
             .status-card {
                 min-width: 200px;
+            }
+            
+            .charts-row {
+                grid-template-columns: 1fr;
             }
         }
         
@@ -363,14 +372,34 @@
             <div class="chart-container">
                 <div class="chart-header">
                     <div class="chart-title">Загрузка производственных мощностей</div>
-                    <select id="chart-range">
+                    <select id="chart-range" onchange="updateCharts()">
                         <option>За сегодня</option>
                         <option selected>За неделю</option>
                         <option>За месяц</option>
                     </select>
                 </div>
                 <div class="chart">
-                    График загрузки мощностей (здесь будет реальная диаграмма при подключении библиотеки Chart.js)
+                    <canvas id="utilizationChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="charts-row">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title">Эффективность работы по станкам</div>
+                </div>
+                <div class="chart">
+                    <canvas id="efficiencyChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title">Распределение статусов станков</div>
+                </div>
+                <div class="chart">
+                    <canvas id="statusChart"></canvas>
                 </div>
             </div>
         </div>
@@ -398,6 +427,9 @@
             { id: 7, name: "ЧПУ Фрезерный 3", status: "active", operation: "Изготовление корпуса", progress: 62, partsCompleted: 62, totalParts: 100, efficiency: 90, timeRemaining: "01:15" },
             { id: 8, name: "ЧПУ Гравировальный 1", status: "active", operation: "Гравировка логотипа", progress: 51, partsCompleted: 51, totalParts: 100, efficiency: 87, timeRemaining: "00:45" }
         ];
+        
+        // Переменные для хранения экземпляров графиков
+        let utilizationChart, efficiencyChart, statusChart;
         
         // Функция для отображения карточек станков
         function renderMachines() {
@@ -464,54 +496,27 @@
             });
         }
         
-        // Функция обновления данных
-        function refreshData() {
-            // Имитация обновления данных
-            document.getElementById('update-time').textContent = new Date().toLocaleTimeString();
+        // Функция для создания и обновления графиков
+        function renderCharts() {
+            // Данные для графиков
+            const utilizationData = {
+                labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+                datasets: [{
+                    label: 'Загрузка мощностей (%)',
+                    data: [65, 72, 80, 75, 85, 40, 15],
+                    backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                    borderColor: 'rgba(52, 152, 219, 1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            };
             
-            // В реальном приложении здесь был бы запрос к серверу
-            machines.forEach(machine => {
-                if (machine.status === 'active') {
-                    // Увеличиваем прогресс на случайное значение
-                    const increment = Math.floor(Math.random() * 5);
-                    machine.progress = Math.min(100, machine.progress + increment);
-                    machine.partsCompleted = Math.min(machine.totalParts, Math.floor(machine.progress * machine.totalParts / 100));
-                    
-                    // Немного изменяем эффективность
-                    machine.efficiency = Math.max(70, Math.min(99, machine.efficiency + (Math.random() * 2 - 1)));
-                }
-            });
-            
-            renderMachines();
-            
-            // Показываем уведомление
-            showNotification('Данные успешно обновлены', 'success');
-        }
-        
-        // Функция показа уведомления
-        function showNotification(message, type) {
-            // В реальном приложении здесь было бы красивое уведомление
-            alert(message);
-        }
-        
-        // Функция показа настроек
-        function showSettings() {
-            alert('Здесь будет диалог настроек мониторинга');
-        }
-        
-        // Функция экспорта данных
-        function exportData() {
-            alert('Здесь будет функциональность экспорта данных в CSV/Excel');
-        }
-        
-        // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            renderMachines();
-            document.getElementById('update-time').textContent = new Date().toLocaleTimeString();
-            
-            // Имитация автоматического обновления каждые 30 секунд
-            setInterval(refreshData, 30000);
-        });
-    </script>
-</body>
-</html>
+            const efficiencyData = {
+                labels: machines.map(m => m.name),
+                datasets: [{
+                    label: 'Эффективность (%)',
+                    data: machines.map(m => m.efficiency),
+                    backgroundColor: machines.map(m => {
+                        if (m.efficiency >= 90) return 'rgba(46, 204, 113, 0.7)';
+                        if (m.efficiency >= 70) return 'rgba(
